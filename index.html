@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>websocket练习</title>
+    <style>
+      .ws-box {
+        width: 80%;
+        max-width: 1000px;
+        margin: 0 auto;
+        display: flex;
+      }
+      .send-btn {
+        width: 400px;
+      }
+      .client-logs {
+        margin-top: 20px;
+        background-color: whitesmoke;
+      }
+      .client-logs p {
+        font-size: 16px;
+        color: #333;
+      }
+      .data-from-server {
+        flex: 1;
+        background-color: #f1f1f1;
+        height: 100%;
+      }
+      .server-logs p {
+        font-size: 16px;
+        color: rgb(171, 101, 10);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ws-box">
+      <div class="send-btn">
+        <div>
+          <h3>前端操作</h3>
+          <div>
+            <textarea rows="4"></textarea>
+          </div>
+          <button onclick="sendConnection()">向8080端口发起WebSocket连接</button>
+          <button onclick="sendMsgToServer()">向服务器发送信息</button>
+          <button onclick="openInterval()">开启定时推送</button>
+          <button onclick="closeInterval()">关闭定时推送</button>
+          <button onclick="closeConnection()">关闭websocket连接</button>
+        </div>
+        <div class="ope-log">
+          <h3>前端操作日志</h3>
+          <div class="client-logs"></div>
+        </div>
+      </div>
+      <div class="data-from-server">
+        <h3>服务端日志：</h3>
+        <div class="server-logs"></div>
+      </div>
+    </div>
+    <script>
+      // 向8080端口发起WebSocket连接。连接建立后，打印日志，同时向服务端发送消息。接收到来自服务端的消息后，同样打印日志。
+      let ws = null
+      let isOpenInterval = '0' // 是否开启定时推送
+
+      // 建立websocket连接
+      function sendConnection() {
+        ws = new WebSocket('ws://localhost:8080')
+        ws.onopen = function () {
+          console.log('ws onopen')
+          clientLog('websocket连接成功')
+        }
+        ws.onmessage = function (e) {
+          console.log('ws onmessage')
+          console.log('来自服务端：', e.data)
+          const dataBox = document.querySelector('.server-logs')
+          const p = document.createElement('p')
+          p.innerHTML = e.data
+          dataBox.appendChild(p)
+        }
+        ws.onerror = function (e) {
+          console.log('ws onerror: s%', e)
+          isOpenInterval = '0'
+          clientLog('websocket连接出错')
+        }
+        ws.onclose = function (e) {
+          console.log('ws onclose')
+          isOpenInterval = '0'
+          clientLog('关闭websocket连接')
+        }
+      }
+      // 关闭websocket连接
+      function closeConnection() {
+        ws && ws.close()
+      }
+      // 向服务器发送信息
+      function sendMsgToServer() {
+        if (!ws || ws.readyState !== 1) {
+          clientLog('请先建立websocket连接')
+          return
+        }
+        const textarea = document.querySelector('textarea')
+        if (!textarea.value) {
+          clientLog('请输入发送内容')
+          return
+        }
+        ws.send(textarea.value)
+      }
+      // 开启定时推送
+      function openInterval() {
+        if (!ws || ws.readyState !== 1) {
+          clientLog('请先建立websocket连接')
+          return
+        }
+        if (isOpenInterval === '1') {
+          clientLog('定时推送已开启')
+          return
+        }
+        clientLog('开启定时推送')
+        isOpenInterval = '1'
+        ws.send('isOpenInterval=1')
+      }
+      // 关闭定时推送
+      function closeInterval() {
+        if (!ws || ws.readyState !== 1) {
+          clientLog('请先建立websocket连接')
+          return
+        }
+        if (isOpenInterval === '0') {
+          clientLog('定时推送已关闭')
+          return
+        }
+        clientLog('关闭定时推送')
+        isOpenInterval = '0'
+        ws.send('isOpenInterval=0')
+      }
+
+      // 前端日志打印方法
+      function clientLog(msg) {
+        const dataBox = document.querySelector('.client-logs')
+        const p = document.createElement('p')
+        p.innerHTML = msg
+        dataBox.appendChild(p)
+      }
+    </script>
+  </body>
+</html>

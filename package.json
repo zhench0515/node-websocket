@@ -1,0 +1,25 @@
+{
+  "name": "websocket-demo1",
+  "version": "1.0.0",
+  "description": "websocket通信",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"anywhere -p 8000\" \"node server.js\"",
+    "dev": "npm run start"
+  },
+  "keywords": [
+    "websocket",
+    "node"
+  ],
+  "author": "zhencanhua",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "anywhere": "^1.6.0",
+    "concurrently": "^9.1.2"
+  }
+}
